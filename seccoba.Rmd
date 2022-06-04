@@ -134,7 +134,7 @@ write.csv(compare,'D:\\KULIAH\\LOMBA\\2021 SEC IPB\\compare2018.csv',row.names =
 ```{r}
 data.clusterk5=data.frame(data.awal$Provinsi, k5$cluster)
 data.clusterk5
-write.csv(data.clusterk5,'D:\\KULIAH\\LOMBA\\2021 SEC IPB\\k5.2018.csv',row.names = T)
+write.csv(data.clusterk5,'D:\\k5.2018.csv',row.names = T)
 ```
 
 \textbf{batas analisis sampai sini}
