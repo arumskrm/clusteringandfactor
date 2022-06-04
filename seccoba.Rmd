@@ -1,0 +1,159 @@
+---
+title: "Draft 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r}
+library(cluster)
+library(factoextra)
+library(psych)
+library(fpc)
+library(purrr)
+```
+
+```{r}
+data.awal=read.csv("data2020.csv", sep=";",header=T)
+attach(data.awal)
+head(data.awal)
+names(data.awal)
+str(data.awal)
+```
+
+```{r}
+data.num=data.awal[2:21]
+bartlett.test(data.num)
+KMO(data.num)
+```
+```{r}
+#data.num=subset(data.num, select=-X18)
+#bartlett.test(data.num)
+#KMO(data.num)
+```
+```{r}
+#data.num=subset(data.num, select=-X19)
+#bartlett.test(data.num)
+#KMO(data.num)
+```
+```{r}
+#data.num=subset(data.num, select=-X7)
+#bartlett.test(data.num)
+#KMO(data.num)
+```
+
+```{r}
+#eigen value
+R=cor(data.num)
+eigen<- eigen(R)
+a=(eigen$values/20)*100
+a
+sum(a[1:5])
+
+plot(eigen$values, type = "both", main = "Scree Plot",xlab="Jumlah Faktor", ylab="Variances")
+abline(h=1,col="red")
+```
+
+
+```{r}
+faktor=principal(data.num,nfactor=5,rotate="varimax",scores=T)
+faktor
+```
+```{r}
+faktor$scores
+```
+
+
+```{r}
+dscale=scale(faktor$scores)
+dscale
+```
+
+
+```{r}
+k.values<-2:10
+
+#kmeans
+avg_sil_kmeans <- function(k) {
+km.res <- kmeans(dscale, centers = k, nstart = 25)
+ss <- silhouette(km.res$cluster, dist(dscale))
+mean(ss[, 3])  }
+sil_kmeans=map_dbl(k.values, avg_sil_kmeans)
+
+#kmedoids pam
+avg_sil_kmedoids <- function(k) {
+km.res <- pam(dscale, k = k)
+ss <- silhouette(km.res$clustering, dist(dscale))
+mean(ss[, 3])  }
+sil_kmedoids <- map_dbl(k.values, avg_sil_kmedoids)
+```
+
+```{r}
+#plot slihoutte
+plot(k.values, sil_kmedoids,
+type = 'b', pch = 19, frame = FALSE,
+xlab = 'Number of clusters K',
+ylab = 'Average Silhouettes')
+lines(k.values,sil_kmeans,col='blue', type = 'b',pch = 19)
+lines(k.values,sil_kmedoids,col='orange', type = 'b',pch = 19)
+legend('bottomright',legend=c('kmeans','kmedois'),lty=c(1,1),col=c('blue','orange'))
+```
+
+```{r}
+# tabel silhouette
+silhuet=data.frame(klaster=k.values,Kmeans=sil_kmeans,KMedoids=sil_kmedoids)
+silhuet
+write.csv(silhuet,'D:\\KULIAH\\LOMBA\\2021 SEC IPB\\silhuet.csv',row.names = T)
+```
+
+```{r}
+fviz_nbclust(dscale,kmeans,method='gap_stat')
+fviz_nbclust(dscale,kmeans,method='wss')
+fviz_nbclust(dscale,kmeans,method='silhouette')
+```
+
+```{r}
+k5=kmeans(dscale,centers=5,nstart=25)
+k5
+fviz_cluster(k5,data=dscale)
+```
+
+```{r}
+data.finalk5=data.frame(data.awal, k5$cluster)
+data.finalk5
+```
+```{r}
+attach(data.finalk5)
+compare=aggregate(list(X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20),list(k5.cluster),FUN=mean)
+colnames(compare)=c('Kluster','X1','X2','X3','X4','X5','X6','X7','X8','X9','X10','X11','X12','X13','X14','X15','X16','X17','X18','X19','X20')
+compare
+write.csv(compare,'D:\\KULIAH\\LOMBA\\2021 SEC IPB\\compare2018.csv',row.names = T)
+```
+
+```{r}
+data.clusterk5=data.frame(data.awal$Provinsi, k5$cluster)
+data.clusterk5
+write.csv(data.clusterk5,'D:\\KULIAH\\LOMBA\\2021 SEC IPB\\k5.2018.csv',row.names = T)
+```
+
+\textbf{batas analisis sampai sini}
+
+
+```{r}
+boxplot(dscale)
+```
+
+
+```{r}
+k4.meds=pam(dscale,k=4)
+k4.meds
+fviz_cluster(k4.meds, data=dscale)
+```
+
+```{r}
+k.medsk=pamk(dscale) #hasilnya k=5
+k.medsk
+```
+
+
